@@ -35,8 +35,8 @@ else:
 for _ in range(10):
 
 	WORD_TO_GUESS = random.choice(dictionary)
+	print('-'*100)
 	print('Word to guess:', WORD_TO_GUESS)
-	input()
 
 	all_words = set(dictionary)
 	for _ in range(6):
@@ -54,7 +54,8 @@ for _ in range(10):
 		# info       = input('Information (0=grey, 1=yellow, 2=green), e.g. 01201:    ')
 		# info = tuple(map(int, tuple(info)))
 
-		guess_word = random.choice([x[0] for x in sorted(entropies.items(), key=lambda x: -x[1])[:10]])
+		# guess_word = random.choice([x[0] for x in sorted(entropies.items(), key=lambda x: -x[1])[:10]])
+		guess_word = max(entropies.items(), key=lambda x: x[1])[0]
 		print('Guessing:', guess_word)
 		info = [0, 0, 0, 0, 0]
 		for i, l1 in enumerate(guess_word):
@@ -71,7 +72,6 @@ for _ in range(10):
 			print()
 			print()
 			break
-		input()
 
 		words = pattern_dict[guess_word][tuple(info)]
 		all_words = all_words.intersection(words)
