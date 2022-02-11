@@ -20,7 +20,7 @@ else:
 		for pattern in all_patterns:
 			pattern_dict[word][tuple(pattern)] = set()
 
-		for word2 in words:
+		for word2 in dictionary:
 			pattern = [0, 0, 0, 0, 0]
 			for i, l1 in enumerate(word):
 				pattern[i] = int(l1 in word2)
