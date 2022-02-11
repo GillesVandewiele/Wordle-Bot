@@ -15,7 +15,7 @@ if 'pattern_dict.p' in os.listdir('.'):
 	pattern_dict = pickle.load(open('pattern_dict.p', 'rb'))
 else:
 	pattern_dict = {}
-	for word in tqdm(words):
+	for word in tqdm(dictionary):
 		pattern_dict[word] = {}
 		for pattern in all_patterns:
 			pattern_dict[word][tuple(pattern)] = set()
