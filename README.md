@@ -26,3 +26,8 @@ python wordle.py
 ## Example
 
 ![Example of execution](wordle_bot.png)
+
+## Statistics
+
+I let the bot guess all the words in our word-list and generated a histogram of the required guesses. Can you do better?
+![Statistics](wordle_stats.png)
