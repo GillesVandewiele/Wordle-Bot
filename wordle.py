@@ -1,77 +1,100 @@
-import re
 import os
-import string
 import itertools
 import random
 import pickle
 from tqdm import tqdm
 from scipy.stats import entropy
+from collections import defaultdict
 
-all_patterns = list(itertools.product([0,1,2], repeat=5))
-with open('words.txt') as ifp:
-	dictionary = list(map(lambda x: x.strip(), ifp.readlines()))
+N_GAMES = 10
+N_GUESSES = 6
+WORD_LEN = 5
+DICT_FILE = 'words.txt'
 
+
+def calculate_pattern(guess, true):
+    """Generate a pattern list that Wordle would return if you guessed
+    `guess` and the true word is `true`
+    >>> calculate_pattern('weary', 'crane')
+    (0, 1, 2, 1, 0)
+    """
+    return tuple((l1 in true) + (l1 == l2) for l1, l2 in zip(guess, true))
+
+
+def generate_pattern_dict(dictionary):
+    """For each word and possible information returned, store a list
+    of candidate words
+    >>> pattern_dict = generate_pattern_dict(['weary', 'bears', 'crane'])
+    >>> pattern_dict['crane'][(2, 2, 2, 2, 2)]
+    {'crane'}
+    >>> sorted(pattern_dict['crane'][(0, 1, 2, 0, 1)])
+    ['bears', 'weary']
+    """
+    pattern_dict = defaultdict(lambda: defaultdict(set))
+    for word in tqdm(dictionary):
+        for word2 in dictionary:
+            pattern = calculate_pattern(word, word2)
+            pattern_dict[word][pattern].add(word2)
+    return dict(pattern_dict)
+
+
+def calculate_entropies(words, possible_words, pattern_dict):
+    """Calculate the entropy for every word in `words`, taking into account
+    the remaining `possible_words`"""
+    entropies = {}
+    for word in words:
+        counts = []
+        for pattern in all_patterns:
+            matches = pattern_dict[word][pattern]
+            matches = matches.intersection(possible_words)
+            counts.append(len(matches))
+        entropies[word] = entropy(counts)
+    return entropies
+
+
+# Generate the possible patterns of information we can get
+all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
+
+# Load our dictionary
+with open(DICT_FILE) as ifp:
+    dictionary = list(map(lambda x: x.strip(), ifp.readlines()))
+
+# Calculate the pattern_dict and cache it, or load the cache.
 if 'pattern_dict.p' in os.listdir('.'):
-	pattern_dict = pickle.load(open('pattern_dict.p', 'rb'))
+    pattern_dict = pickle.load(open('pattern_dict.p', 'rb'))
 else:
-	pattern_dict = {}
-	for word in tqdm(dictionary):
-		pattern_dict[word] = {}
-		for pattern in all_patterns:
-			pattern_dict[word][tuple(pattern)] = set()
+    pattern_dict = generate_pattern_dict(dictionary)
+    pickle.dump(pattern_dict, open('pattern_dict.p', 'wb+'))
 
-		for word2 in dictionary:
-			pattern = [0, 0, 0, 0, 0]
-			for i, l1 in enumerate(word):
-				pattern[i] = int(l1 in word2)
+# Simulate games
+for _ in range(N_GAMES):
 
-			for i, (l1, l2) in enumerate(zip(word, word2)):
-				if l1 == l2:
-					pattern[i] = 2
+    # Pick a random word for the bot to guess
+    WORD_TO_GUESS = random.choice(dictionary)
+    print('-'*100)
+    print('Word to guess:', WORD_TO_GUESS)
 
-			pattern_dict[word][tuple(pattern)].add(word2)
-	pickle.dump(pattern_dict, open('pattern_dict.p', 'wb+'))
+    # Keep a list of the remaining possible words
+    all_words = set(dictionary)
+    for n_round in range(N_GUESSES):
+        # Calculate entropies
+        if len(all_words) < 10:
+            candidates = all_words
+        else:
+            candidates = dictionary
+        entropies = calculate_entropies(candidates, all_words, pattern_dict)
 
-for _ in range(10):
+        # Guess the candiate with highest entropy
+        guess_word = max(entropies.items(), key=lambda x: x[1])[0]
+        info = calculate_pattern(guess_word, WORD_TO_GUESS)
 
-	WORD_TO_GUESS = random.choice(dictionary)
-	print('-'*100)
-	print('Word to guess:', WORD_TO_GUESS)
+        # Print round information
+        print('Guessing:     ', guess_word)
+        print('Info:         ', info)
+        if guess_word == WORD_TO_GUESS:
+            print(f'WIN IN {n_round + 1} GUESSES!\n\n\n')
+            break
 
-	all_words = set(dictionary)
-	for _ in range(6):
-		entropies = {}
-		for word in tqdm(all_words):
-			counts = []
-			for pattern in all_patterns:
-				matches = pattern_dict[word][tuple(pattern)]
-				matches = matches.intersection(all_words)
-				counts.append(len(matches))
-			entropies[word] = entropy(counts)
-
-		# print([x[0] for x in sorted(entropies.items(), key=lambda x: -x[1])[:10]])
-		# guess_word = input('Guessed word (lower caps):                              ')
-		# info       = input('Information (0=grey, 1=yellow, 2=green), e.g. 01201:    ')
-		# info = tuple(map(int, tuple(info)))
-
-		# guess_word = random.choice([x[0] for x in sorted(entropies.items(), key=lambda x: -x[1])[:10]])
-		guess_word = max(entropies.items(), key=lambda x: x[1])[0]
-		print('Guessing:', guess_word)
-		info = [0, 0, 0, 0, 0]
-		for i, l1 in enumerate(guess_word):
-			info[i] = int(l1 in WORD_TO_GUESS)
-
-		for i, (l1, l2) in enumerate(zip(guess_word, WORD_TO_GUESS)):
-			if l1 == l2:
-				info[i] = 2
-
-		print('Info:', info)
-		if guess_word == WORD_TO_GUESS:
-			print('WIN!')
-			print()
-			print()
-			print()
-			break
-
-		words = pattern_dict[guess_word][tuple(info)]
-		all_words = all_words.intersection(words)
+        # Filter our list of remaining possible words
+        words = pattern_dict[guess_word][info]
+        all_words = all_words.intersection(words)
