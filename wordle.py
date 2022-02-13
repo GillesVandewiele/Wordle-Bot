@@ -8,7 +8,6 @@ from collections import defaultdict, Counter
 
 N_GAMES = 10
 N_GUESSES = 6
-WORD_LEN = 5
 DICT_FILE = 'words.txt'
 
 
@@ -64,12 +63,16 @@ def calculate_entropies(words, possible_words, pattern_dict):
     return entropies
 
 
-# Generate the possible patterns of information we can get
-all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
-
 # Load our dictionary
 with open(DICT_FILE) as ifp:
     dictionary = list(map(lambda x: x.strip(), ifp.readlines()))
+error_msg = 'Dictionary contains different length words.'
+assert len({len(x) for x in dictionary}) == 1, error_msg
+print(f'Loaded dictionary with {len(dictionary)} words...')
+WORD_LEN = len(dictionary[0])
+
+# Generate the possible patterns of information we can get
+all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
 
 # Calculate the pattern_dict and cache it, or load the cache.
 if 'pattern_dict.p' in os.listdir('.'):
