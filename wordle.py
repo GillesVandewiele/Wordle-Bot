@@ -4,7 +4,7 @@ import random
 import pickle
 from tqdm import tqdm
 from scipy.stats import entropy
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 N_GAMES = 10
 N_GUESSES = 6
@@ -14,11 +14,23 @@ DICT_FILE = 'words.txt'
 
 def calculate_pattern(guess, true):
     """Generate a pattern list that Wordle would return if you guessed
-    `guess` and the true word is `true`
+    `guess` and the true word is `true` (Thanks to MarkCBell)
     >>> calculate_pattern('weary', 'crane')
     (0, 1, 2, 1, 0)
+    >>> calculate_pattern('meets', 'weary')
+    (0, 2, 0, 0, 0)
     """
-    return tuple((l1 in true) + (l1 == l2) for l1, l2 in zip(guess, true))
+    yellows = Counter(true)
+    pattern = []
+    for x, y in zip(guess, true):
+        if x == y:
+            pattern.append(2)
+        elif yellows[x] > 0:
+            pattern.append(1)
+        else:
+            pattern.append(0)
+        yellows[x] -= 1
+    return tuple(pattern)
 
 
 def generate_pattern_dict(dictionary):
