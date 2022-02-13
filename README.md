@@ -21,11 +21,11 @@ git clone https://github.com/GillesVandewiele/Wordle-Bot.git
 python wordle.py
 ```
 
-4. There are some lines commented that will allow you to play interactively to solve the Wordle of the day.
-
 ## Example
 
-![Example of execution](wordle_bot.png)
+![Interactive](wordle_interactive.png)
+
+![Example of execution](wordle_bot.png
 
 ## Statistics
 
