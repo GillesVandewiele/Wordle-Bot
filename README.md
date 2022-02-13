@@ -25,7 +25,7 @@ python wordle.py
 
 ![Interactive](wordle_interactive.png)
 
-![Example of execution](wordle_bot.png
+![Example of execution](wordle_bot.png)
 
 ## Statistics
 
