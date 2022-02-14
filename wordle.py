@@ -13,22 +13,25 @@ DICT_FILE = 'words.txt'
 
 def calculate_pattern(guess, true):
     """Generate a pattern list that Wordle would return if you guessed
-    `guess` and the true word is `true` (Thanks to MarkCBell)
+    `guess` and the true word is `true`
+    Thanks to MarkCBell, Jeroen van der Hooft and gbotev1
     >>> calculate_pattern('weary', 'crane')
     (0, 1, 2, 1, 0)
     >>> calculate_pattern('meets', 'weary')
     (0, 2, 0, 0, 0)
+    >>> calculate_pattern('rower', 'goner')
+    (0, 2, 0, 2, 2)
     """
-    yellows = Counter(true)
-    pattern = []
-    for x, y in zip(guess, true):
-        if x == y:
-            pattern.append(2)
-        elif yellows[x] > 0:
-            pattern.append(1)
+    wrong = [i for i, v in enumerate(guess) if v != true[i]]
+    counts = Counter(true[i] for i in wrong)
+    pattern = [2] * 5
+    for i in wrong:
+        v = guess[i]
+        if counts[v] > 0:
+            pattern[i] = 1
+            counts[v] -= 1
         else:
-            pattern.append(0)
-        yellows[x] -= 1
+            pattern[i] = 0
     return tuple(pattern)
 
 
