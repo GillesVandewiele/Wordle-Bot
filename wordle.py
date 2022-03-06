@@ -104,6 +104,7 @@ def main():
             all_words = all_words.intersection(words)
             init_round = 1
         else:
+            all_words = set(all_dictionary)
             init_round = 0
 
         for n_round in range(init_round, N_GUESSES):
