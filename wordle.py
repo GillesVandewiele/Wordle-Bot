@@ -53,7 +53,7 @@ def generate_pattern_dict(dictionary):
     return dict(pattern_dict)
 
 
-def calculate_entropies(words, possible_words, pattern_dict):
+def calculate_entropies(words, possible_words, pattern_dict, all_patterns):
     """Calculate the entropy for every word in `words`, taking into account
     the remaining `possible_words`"""
     entropies = {}
@@ -110,11 +110,11 @@ def main():
         for n_round in range(init_round, N_GUESSES):
 
             candidates = all_dictionary
-            entropies = calculate_entropies(candidates, all_words, pattern_dict)
+            entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
 
             if max(entropies.values()) < 0.1:
                 candidates = all_words
-                entropies = calculate_entropies(candidates, all_words, pattern_dict)
+                entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
 
             # Guess the candiate with highest entropy
             guess_word = max(entropies.items(), key=lambda x: x[1])[0]
