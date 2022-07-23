@@ -100,7 +100,7 @@ def main():
             guess_word = 'tares'
             all_words = set(all_dictionary)
             info = calculate_pattern(guess_word, WORD_TO_GUESS)
-            words = pattern_dict['tares'][info]
+            words = pattern_dict[guess_word][info]
             all_words = all_words.intersection(words)
             init_round = 1
         else:
