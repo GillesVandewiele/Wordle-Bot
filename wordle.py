@@ -6,6 +6,7 @@ from src.disk_utils import get_pattern_dict_fname, load_pattern_dict, save_patte
 from tqdm import tqdm
 from scipy.stats import entropy
 from collections import defaultdict, Counter
+from src.chunk_utils import chunks, get_num_chunks, get_pattern
 
 N_GUESSES = 10
 DICT_FILE_all = 'all_words.txt'
@@ -84,13 +85,14 @@ def main():
     # Generate the possible patterns of information we can get
     all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
 
-    # Calculate the pattern_dict and cache it, or load the cache.
-    fname = get_pattern_dict_fname()
-    if fname in os.listdir('.'):
-        pattern_dict = load_pattern_dict()
-    else:
-        pattern_dict = generate_pattern_dict(all_dictionary)
-        save_pattern_dict(pattern_dict)
+    num_chunks = get_num_chunks(all_dictionary)
+    for chunk_no, dictionary_chunk in enumerate(chunks(all_dictionary), start=1):
+        fname = get_pattern_dict_fname(chunk_no)
+        print(f'[{chunk_no}/{num_chunks}] Processing {fname}')
+        if not os.path.exists(fname):
+            # Calculate the pattern_dict and cache it
+            pattern_dict = generate_pattern_dict(dictionary_chunk)
+            save_pattern_dict(pattern_dict, chunk_no)
 
     # Simulate games
     stats = defaultdict(list)
@@ -101,7 +103,7 @@ def main():
             guess_word = 'tares'
             all_words = set(all_dictionary)
             info = calculate_pattern(guess_word, WORD_TO_GUESS)
-            words = pattern_dict[guess_word][info]
+            words = get_pattern(all_dictionary, guess_word)[info]
             all_words = all_words.intersection(words)
             init_round = 1
         else:
@@ -110,8 +112,13 @@ def main():
 
         for n_round in range(init_round, N_GUESSES):
 
-            candidates = all_dictionary
-            entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
+            entropies = {}
+            for chunk_no, dictionary_chunk in enumerate(chunks(all_dictionary), start=1):
+                pattern_dict = load_pattern_dict(chunk_no)
+
+                candidates = list(pattern_dict.keys())
+                chunk_entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
+                entropies.update(chunk_entropies)
 
             if max(entropies.values()) < 0.1:
                 candidates = all_words
@@ -129,7 +136,7 @@ def main():
                 break
 
             # Filter our list of remaining possible words
-            words = pattern_dict[guess_word][info]
+            words = get_pattern(all_dictionary, guess_word)[info]
             all_words = all_words.intersection(words)
 
 if __name__ == "__main__":
