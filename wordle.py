@@ -113,7 +113,7 @@ def main():
         for n_round in range(init_round, N_GUESSES):
 
             entropies = {}
-            for chunk_no, dictionary_chunk in enumerate(chunks(all_dictionary), start=1):
+            for chunk_no in range(1, get_num_chunks(all_dictionary) + 1):
                 pattern_dict = load_pattern_dict(chunk_no)
 
                 candidates = list(pattern_dict.keys())
