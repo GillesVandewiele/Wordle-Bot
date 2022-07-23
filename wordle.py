@@ -112,10 +112,6 @@ def main():
             candidates = all_dictionary
             entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
 
-            if max(entropies.values()) < 0.1:
-                candidates = all_words
-                entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
-
             # Guess the candiate with highest entropy
             guess_word = max(entropies.items(), key=lambda x: x[1])[0]
             info = calculate_pattern(guess_word, WORD_TO_GUESS)
