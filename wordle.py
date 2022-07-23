@@ -2,7 +2,7 @@
 import os
 import itertools
 import random
-import pickle
+from src.disk_utils import get_pattern_dict_fname, load_pattern_dict, save_pattern_dict
 from tqdm import tqdm
 from scipy.stats import entropy
 from collections import defaultdict, Counter
@@ -85,11 +85,12 @@ def main():
     all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
 
     # Calculate the pattern_dict and cache it, or load the cache.
-    if 'pattern_dict.p' in os.listdir('.'):
-        pattern_dict = pickle.load(open('pattern_dict.p', 'rb'))
+    fname = get_pattern_dict_fname()
+    if fname in os.listdir('.'):
+        pattern_dict = load_pattern_dict()
     else:
         pattern_dict = generate_pattern_dict(all_dictionary)
-        pickle.dump(pattern_dict, open('pattern_dict.p', 'wb+'))
+        save_pattern_dict(pattern_dict)
 
     # Simulate games
     stats = defaultdict(list)
