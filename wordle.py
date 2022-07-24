@@ -128,8 +128,7 @@ def main():
             entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=False)
 
             if max(entropies.values()) < 0.1:
-                candidates = all_words
-                entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
+                entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=True)
 
             # Guess the candiate with highest entropy
             guess_word = max(entropies.items(), key=lambda x: x[1])[0]
