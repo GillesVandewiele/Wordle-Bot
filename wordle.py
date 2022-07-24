@@ -125,10 +125,10 @@ def main():
             init_round = 0
 
         for n_round in range(init_round, N_GUESSES):
-            entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=False)
+            entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=True)
 
             if max(entropies.values()) < 0.1:
-                entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=True)
+                entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=False)
 
             # Guess the candiate with highest entropy
             guess_word = max(entropies.items(), key=lambda x: x[1])[0]
