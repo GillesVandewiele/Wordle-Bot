@@ -68,6 +68,20 @@ def calculate_entropies(words, possible_words, pattern_dict, all_patterns):
     return entropies
 
 
+def calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates = False):
+    entropies = {}
+    for chunk_no in range(1, num_chunks + 1):
+        pattern_dict = load_pattern_dict(chunk_no)
+
+        candidates = list(pattern_dict.keys())
+        if filter_candidates:
+            candidates = list(set(candidates).intersection(all_words))
+        chunk_entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
+        entropies.update(chunk_entropies)
+
+    return entropies
+
+
 def main():
     # load all 5-letter-words for making patterns 
     with open(DICT_FILE_all) as ifp:
@@ -111,14 +125,7 @@ def main():
             init_round = 0
 
         for n_round in range(init_round, N_GUESSES):
-
-            entropies = {}
-            for chunk_no in range(1, get_num_chunks(all_dictionary) + 1):
-                pattern_dict = load_pattern_dict(chunk_no)
-
-                candidates = list(pattern_dict.keys())
-                chunk_entropies = calculate_entropies(candidates, all_words, pattern_dict, all_patterns)
-                entropies.update(chunk_entropies)
+            entropies = calculate_entropies_in_chunks(all_words, all_patterns, num_chunks, filter_candidates=False)
 
             if max(entropies.values()) < 0.1:
                 candidates = all_words
