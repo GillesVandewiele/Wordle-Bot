@@ -37,7 +37,7 @@ def calculate_pattern(guess, true):
     return tuple(pattern)
 
 
-def generate_pattern_dict(dictionary):
+def generate_pattern_dict(dictionary, all_words=None):
     """For each word and possible information returned, store a list
     of candidate words
     >>> pattern_dict = generate_pattern_dict(['weary', 'bears', 'crane'])
@@ -46,9 +46,11 @@ def generate_pattern_dict(dictionary):
     >>> sorted(pattern_dict['crane'][(0, 1, 2, 0, 1)])
     ['bears', 'weary']
     """
+    if all_words is None:
+        all_words = set(dictionary)
     pattern_dict = defaultdict(lambda: defaultdict(set))
     for word in tqdm(dictionary):
-        for word2 in dictionary:
+        for word2 in all_words:
             pattern = calculate_pattern(word, word2)
             pattern_dict[word][pattern].add(word2)
     return dict(pattern_dict)
@@ -85,13 +87,14 @@ def main():
     # Generate the possible patterns of information we can get
     all_patterns = list(itertools.product([0, 1, 2], repeat=WORD_LEN))
 
+    all_words = set(all_dictionary)
     num_chunks = get_num_chunks(all_dictionary)
     for chunk_no, dictionary_chunk in enumerate(chunks(all_dictionary), start=1):
         fname = get_pattern_dict_fname(chunk_no)
         print(f'[{chunk_no}/{num_chunks}] Processing {fname}')
         if not os.path.exists(fname):
             # Calculate the pattern_dict and cache it
-            pattern_dict = generate_pattern_dict(dictionary_chunk)
+            pattern_dict = generate_pattern_dict(dictionary_chunk, all_words)
             save_pattern_dict(pattern_dict, chunk_no)
 
     # Simulate games
